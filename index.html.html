@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 Fantasy Baseball — Commissioner's Scouting Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0d1b2a;
+    --navy-mid: #162233;
+    --gold: #e8c14a;
+    --gold-dim: #c9a73a;
+    --red: #d64040;
+    --green: #3aad7e;
+    --green-dim: #2d8a64;
+    --amber: #e07b2e;
+    --slate: #8fa3b8;
+    --slate-dim: #5c7a94;
+    --white: #f4f0e8;
+    --off-white: #ece8df;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--navy); color: var(--white); font-family: 'DM Sans', sans-serif; font-weight: 300; line-height: 1.65; min-height: 100vh; }
+
+  .hero { background: linear-gradient(170deg, #0d1b2a 0%, #162638 60%, #0f2235 100%); border-bottom: 1px solid rgba(232,193,74,0.25); padding: 72px 40px 60px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(232,193,74,0.07) 0%, transparent 70%); pointer-events: none; }
+  .hero-eyebrow { font-weight: 500; font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
+  .hero h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px, 8vw, 96px); letter-spacing: 0.04em; line-height: 0.9; color: var(--white); margin-bottom: 16px; }
+  .hero h1 span { color: var(--gold); }
+  .hero-sub { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 18px; color: var(--slate); margin-bottom: 32px; }
+  .hero-meta { display: inline-flex; gap: 32px; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate-dim); }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  .commissioner-note { background: rgba(232,193,74,0.06); border-left: 3px solid var(--gold); padding: 24px 28px; margin: 48px 0 56px; border-radius: 0 4px 4px 0; }
+  .commissioner-note .label { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 8px; }
+  .commissioner-note p { font-family: 'DM Serif Display', serif; font-style: italic; font-size: 16px; color: var(--off-white); line-height: 1.7; }
+
+  .section-header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+  .section-header h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(28px, 4vw, 40px); letter-spacing: 0.05em; color: var(--white); }
+  .section-header .icon { font-size: 28px; line-height: 1; }
+  .section-divider { flex: 1; height: 1px; background: linear-gradient(to right, rgba(232,193,74,0.4), transparent); }
+
+  .rankings-table { width: 100%; border-collapse: collapse; margin-bottom: 64px; }
+  .rankings-table thead th { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600; color: var(--slate-dim); padding: 0 16px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .rankings-table thead th:first-child { text-align: center; width: 56px; }
+  .rankings-table thead th:nth-child(3) { text-align: center; width: 72px; }
+  .rankings-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.15s; }
+  .rankings-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+  .rankings-table tbody tr.top3 { background: rgba(232,193,74,0.04); }
+  .rankings-table tbody tr.top3:hover { background: rgba(232,193,74,0.07); }
+  .rankings-table td { padding: 14px 16px; font-size: 14px; }
+  .rank-num { text-align: center; font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--slate-dim); }
+  .rank-num.gold { color: var(--gold); }
+  .team-name-cell { font-weight: 500; color: var(--white); font-size: 15px; }
+  .grade-cell { text-align: center; }
+  .grade-pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; letter-spacing: 0.05em; }
+  .g-a  { background: rgba(58,173,126,0.2);  color: #5cd6a0; border: 1px solid rgba(58,173,126,0.3); }
+  .g-b+ { background: rgba(116,175,72,0.2);  color: #94d65a; border: 1px solid rgba(116,175,72,0.3); }
+  .g-b  { background: rgba(224,123,46,0.2);  color: #f0a060; border: 1px solid rgba(224,123,46,0.3); }
+  .g-b- { background: rgba(214,64,64,0.2);   color: #f08080; border: 1px solid rgba(214,64,64,0.3); }
+  .key-cell { color: var(--slate); font-size: 13px; }
+
+  .injury-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 64px; }
+  @media (max-width: 640px) { .injury-grid { grid-template-columns: 1fr; } }
+  .injury-card { background: var(--navy-mid); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 16px 18px; border-left: 3px solid var(--red); }
+  .injury-card.warning { border-left-color: var(--amber); }
+  .injury-card.optimistic { border-left-color: var(--green-dim); }
+  .injury-player { font-weight: 600; font-size: 14px; color: var(--white); margin-bottom: 2px; }
+  .injury-team-tag { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--slate-dim); margin-bottom: 7px; }
+  .injury-desc { font-size: 13px; color: var(--slate); line-height: 1.5; }
+
+  .teams-grid { display: flex; flex-direction: column; gap: 24px; margin-bottom: 64px; }
+  .team-card { background: var(--navy-mid); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; overflow: hidden; transition: border-color 0.2s; }
+  .team-card:hover { border-color: rgba(232,193,74,0.25); }
+  .team-card-header { padding: 20px 24px 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); background: linear-gradient(to right, rgba(255,255,255,0.03), transparent); }
+  .team-rank-badge { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 22px; flex-shrink: 0; }
+  .rank-1   { background: rgba(232,193,74,0.15); color: var(--gold); border: 1px solid rgba(232,193,74,0.4); }
+  .rank-top { background: rgba(58,173,126,0.12); color: #5cd6a0; border: 1px solid rgba(58,173,126,0.3); }
+  .rank-mid { background: rgba(224,123,46,0.12); color: #f0a060; border: 1px solid rgba(224,123,46,0.3); }
+  .rank-bot { background: rgba(214,64,64,0.1);   color: #f08080; border: 1px solid rgba(214,64,64,0.25); }
+  .team-header-info { flex: 1; }
+  .team-card-name { font-family: 'DM Serif Display', serif; font-size: 19px; color: var(--white); line-height: 1.2; margin-bottom: 3px; }
+  .team-header-grade { display: flex; align-items: center; gap: 10px; }
+  .team-header-grade .grade-pill { font-size: 11px; }
+  .team-header-rank-label { font-size: 11px; color: var(--slate-dim); letter-spacing: 0.05em; }
+  .team-card-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 12px; }
+  .team-attr { display: flex; gap: 12px; }
+  .attr-label { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold-dim); min-width: 88px; padding-top: 2px; flex-shrink: 0; }
+  .attr-label.red    { color: var(--red); }
+  .attr-label.amber  { color: var(--amber); }
+  .attr-label.green  { color: var(--green); }
+  .attr-label.purple { color: #b07ddb; }
+  .attr-val { font-size: 13.5px; color: var(--slate); line-height: 1.55; }
+  .attr-val strong { color: var(--white); font-weight: 500; }
+
+  footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 40px 24px; text-align: center; color: var(--slate-dim); font-size: 12px; letter-spacing: 0.05em; }
+  footer .footer-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--slate-dim); letter-spacing: 0.1em; margin-bottom: 8px; }
+
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+  section { padding: 56px 0 0; }
+  section:last-of-type { padding-bottom: 56px; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">⚾ Commissioner's Pre-Season Report</div>
+  <h1>2026 Fantasy<br><span>Baseball</span></h1>
+  <p class="hero-sub">12-Team Head-to-Head Points League &mdash; Full Scouting Report</p>
+  <div class="hero-meta">
+    <span>📅 March 2026</span>
+    <span>🏆 12 Teams</span>
+    <span>⚾ All Rosters Evaluated</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="commissioner-note reveal">
+    <div class="label">Commissioner's Note</div>
+    <p>Welcome to the 2026 season. What follows is a full pre-season breakdown of all 12 rosters — power rankings, strengths, fatal flaws, injury watch items, and wild cards for every team. In a head-to-head points format, total scoring output is everything. Pitching depth and high-upside bats both drive weekly point totals, and roster construction matters more than ever. Some of you are going to love this. Some of you are going to be furious. That's fantasy baseball. May your IL stay empty.</p>
+  </div>
+
+  <section>
+    <div class="section-header reveal">
+      <span class="icon">📊</span>
+      <h2>Pre-Season Power Rankings</h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="reveal">
+    <table class="rankings-table">
+      <thead><tr><th>#</th><th>Team</th><th>Grade</th><th>Key Advantage</th></tr></thead>
+      <tbody>
+        <tr class="top3"><td class="rank-num gold">1</td><td class="team-name-cell">Brett Favre's Pitchin Club 25</td><td class="grade-cell"><span class="grade-pill g-a">A-</span></td><td class="key-cell">Best overall balance — elite pitching depth drives points every week. Clear favorite.</td></tr>
+        <tr class="top3"><td class="rank-num gold">2</td><td class="team-name-cell">Every Pitchers Name I Use They</td><td class="grade-cell"><span class="grade-pill g-b+">B+</span></td><td class="key-cell">Best raw offense (Soto/Harper/Riley/Wood) generates the highest offensive point totals weekly.</td></tr>
+        <tr class="top3"><td class="rank-num gold">3</td><td class="team-name-cell">THE Bald Brethren</td><td class="grade-cell"><span class="grade-pill g-b+">B+</span></td><td class="key-cell">Skubal + Cade Smith — consistent point production from ace starter and elite closer.</td></tr>
+        <tr><td class="rank-num">4</td><td class="team-name-cell">Ian's Inspiring Team</td><td class="grade-cell"><span class="grade-pill g-b+">B+</span></td><td class="key-cell">Ramirez + Alvarez + Gallen/Eovaldi/Peralta. Highest floor — never gets blown out in a matchup.</td></tr>
+        <tr><td class="rank-num">5</td><td class="team-name-cell">Chain of Custody</td><td class="grade-cell"><span class="grade-pill g-b">B</span></td><td class="key-cell">Ohtani/Valdez/Cease — best rotation 1-through-3. Closer scoring is a weekly liability.</td></tr>
+        <tr><td class="rank-num">6</td><td class="team-name-cell">Thievin' Ricans</td><td class="grade-cell"><span class="grade-pill g-b">B</span></td><td class="key-cell">Suarez/Castillo + Vladdy. Steele returns mid-season as a legitimate SP2-level point scorer.</td></tr>
+        <tr><td class="rank-num">7</td><td class="team-name-cell">Kent Murphy's Dingers</td><td class="grade-cell"><span class="grade-pill g-b">B</span></td><td class="key-cell">Crochet + Kirby/Bibee/Pivetta rack up strikeout points. Bullpen scoring is dead weight.</td></tr>
+        <tr><td class="rank-num">8</td><td class="team-name-cell">Jobu's Rum Collection</td><td class="grade-cell"><span class="grade-pill g-b">B</span></td><td class="key-cell">Skenes + Munoz/Pagan/Hoffman — elite pitching points, offense is the weekly drag.</td></tr>
+        <tr><td class="rank-num">9</td><td class="team-name-cell">Strider? I Barely Know Her</td><td class="grade-cell"><span class="grade-pill g-b-">B-</span></td><td class="key-cell">Caminero/Freeman + Imanaga/Gilbert. Three IL arms cost points early — Rodon fixes it in May.</td></tr>
+        <tr><td class="rank-num">10</td><td class="team-name-cell">The Crochman Cometh</td><td class="grade-cell"><span class="grade-pill g-b-">B-</span></td><td class="key-cell">Yamamoto + deep bench rotation. Closer scoring is the worst active bullpen in the league.</td></tr>
+        <tr><td class="rank-num">11</td><td class="team-name-cell">I need healing</td><td class="grade-cell"><span class="grade-pill g-b-">B-</span></td><td class="key-cell">Judge/Elly/Trea Turner produce at the plate. Wheeler's TOS return determines the rotation ceiling.</td></tr>
+        <tr><td class="rank-num">12</td><td class="team-name-cell">Jazz J1zz'on'em</td><td class="grade-cell"><span class="grade-pill g-b-">B-</span></td><td class="key-cell">Acuna/Tucker/Chourio score all season. Pitching staff bleeds points until Burnes arrives in July.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-header reveal">
+      <span class="icon">🚑</span>
+      <h2>Key Injury Watch</h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="injury-grid reveal">
+      <div class="injury-card">
+        <div class="injury-player">Corbin Burnes · ARI</div>
+        <div class="injury-team-tag">Jazz J1zz'on'em</div>
+        <div class="injury-desc">Tommy John surgery. Targeting July All-Star break return. Every week without him is a points disadvantage that the offense has to overcome alone.</div>
+      </div>
+      <div class="injury-card">
+        <div class="injury-player">Hunter Greene · CIN</div>
+        <div class="injury-team-tag">Kent Murphy's Dingers</div>
+        <div class="injury-desc">Bone chip surgery in right elbow. 14–16 week timeline puts return in July. UCL is clean — when he's back, he's one of the highest strikeout point scorers in the game.</div>
+      </div>
+      <div class="injury-card warning">
+        <div class="injury-player">Zack Wheeler · PHI</div>
+        <div class="injury-team-tag">I need healing</div>
+        <div class="injury-desc">TOS surgery. Threw a minor league game March 23rd — return potentially in April per The Athletic. The entire ceiling of this roster's weekly point total depends on his health.</div>
+      </div>
+      <div class="injury-card warning">
+        <div class="injury-player">Josh Hader · HOU</div>
+        <div class="injury-team-tag">Every Pitchers Name I Use They</div>
+        <div class="injury-desc">Biceps tendinitis. Starts on IL — mid-April return possible. Bryan Abreu is closing in the interim. Save points aren't going to zero, just delayed a few weeks.</div>
+      </div>
+      <div class="injury-card">
+        <div class="injury-player">Blake Snell · LAD</div>
+        <div class="injury-team-tag">The Crochman Cometh</div>
+        <div class="injury-desc">Shoulder. Starts on IL, Roberts says 6 weeks is the floor. Chronic history makes him a season-long monitoring situation. Every missed start is points this team needs.</div>
+      </div>
+      <div class="injury-card warning">
+        <div class="injury-player">Quinn Priester · MIL</div>
+        <div class="injury-team-tag">Kent Murphy's Dingers</div>
+        <div class="injury-desc">Neurogenic thoracic outlet syndrome — least severe variety. No surgery expected. Targeting late April/May return. Encouraging early throws in camp post-diagnosis.</div>
+      </div>
+      <div class="injury-card warning">
+        <div class="injury-player">Carlos Rodon · NYY</div>
+        <div class="injury-team-tag">Strider? I Barely Know Her</div>
+        <div class="injury-desc">Bone spur surgery. Returning late April/early May. Staff leans on Imanaga/Gilbert/Woo to generate pitching points while they wait for him to come back.</div>
+      </div>
+      <div class="injury-card optimistic">
+        <div class="injury-player">Justin Steele · CHC</div>
+        <div class="injury-team-tag">Thievin' Ricans</div>
+        <div class="injury-desc">UCL revision — medically cleared. Targeting May/June return. His return adds a legitimate SP2-level weekly point producer to an already solid rotation.</div>
+      </div>
+      <div class="injury-card optimistic">
+        <div class="injury-player">Gerrit Cole · NYY</div>
+        <div class="injury-team-tag">Brett Favre's Pitchin Club 25</div>
+        <div class="injury-desc">On watch — but hitting 97 mph in spring and looking sharp. Monitor before Week 1 roster locks. Most likely fine and scoring big strikeout points from Opening Day.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-header reveal">
+      <span class="icon">📋</span>
+      <h2>Team-by-Team Scouting Reports</h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="teams-grid">
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-1">1</div>
+          <div class="team-header-info">
+            <div class="team-card-name">Brett Favre's Pitchin Club 25</div>
+            <div class="team-header-grade"><span class="grade-pill g-a">A-</span><span class="team-header-rank-label">Rank #1 — Clear Favorite</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val">The deepest pitching staff in the draft — full stop. <strong>Fried, Strider (TJ rebound), Glasnow, Sheehan, Chandler, McClanahan, and Mick Abel</strong> give this team more high-ceiling SP point options than anyone else in the league. The offense is anchored by <strong>Witt Jr., Rutschman, Kurtz,</strong> and Robert Jr. with serious power upside. <strong>Sal Stewart</strong> (.355/.487/.613 this spring) is the best late-round value in the entire draft.</div></div>
+          <div class="team-attr"><div class="attr-label amber">Concerns</div><div class="attr-val"><strong>Jordan Lawlar</strong> is the highest-variance player at any position — elite point producer or total bust with no middle ground. Gerrit Cole's IL status needs to be resolved before Week 1 lineups lock.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val"><strong>Luis Robert Jr.</strong> If healthy for 140+ games, the offensive point totals jump dramatically. If not, the rotation depth still carries this team to a top-3 weekly scoring finish.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">Clear favorite. The combination of pitching depth and a balanced, high-upside offense produces the most consistent weekly point totals in the league. Every other team needs this one to run into bad injury luck.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-top">2</div>
+          <div class="team-header-info">
+            <div class="team-card-name">Every Pitchers Name I Use They</div>
+            <div class="team-header-grade"><span class="grade-pill g-b+">B+</span><span class="team-header-rank-label">Rank #2 — Highest Offensive Point Ceiling</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val">The best pure offense in the entire draft — <strong>Soto and Harper</strong> as a 1-2 punch is elite, backed by Austin Riley, Corey Seager, and Logan O'Hoppe. That lineup generates weekly offensive points at a rate most rosters simply cannot match. <strong>Mason Miller</strong> is the second-best scoring closer in this league, and Bryan Abreu is handling closing duties while Hader recovers.</div></div>
+          <div class="team-attr"><div class="attr-label amber">Concerns</div><div class="attr-val"><strong>Grayson Rodriguez</strong> is on the IL to open the season — hasn't pitched in MLB since July 2024. Jared Jones is on IL-60. The rotation is very top-heavy and weekly pitching point totals could get inconsistent if Nola and Schlittler underdeliver.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val"><strong>Grayson Rodriguez's return.</strong> If healthy by June, the pitching matches the offense and this becomes the league's most complete weekly scorer. If not, they'll outscore opponents at the plate and hope the rotation holds.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">The highest offensive point ceiling in the league. Rotation depth is the only thing separating them from the top spot. Opponents will need elite pitching weeks to survive the offensive onslaught.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-top">3</div>
+          <div class="team-header-info">
+            <div class="team-card-name">THE Bald Brethren</div>
+            <div class="team-header-grade"><span class="grade-pill g-b+">B+</span><span class="team-header-rank-label">Rank #3 — Most Balanced Weekly Scorer</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val">The most balanced roster in the draft from a weekly points standpoint. <strong>Skubal</strong> is a top-3 SP scoring machine with elite ratios. <strong>Cade Smith</strong> is the best high-leverage closer in the league — save and strikeout points add up fast with a 40-save ceiling. Devin Williams adds elite reliever scoring. Henderson, Suarez, and McLain provide three-position offensive depth.</div></div>
+          <div class="team-attr"><div class="attr-label amber">Concerns</div><div class="attr-val">The outfield (Marsee, Caglianone, Torkelson) is the thinnest point-producing OF group in the league. If those three don't contribute offensively, the roster leans entirely on pitching to win matchups. <strong>Eury Perez</strong> is a high-upside scoring arm with real injury history.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val"><strong>Eury Perez.</strong> A full healthy season makes him a top-15 SP point scorer. An injury puts real pressure on an outfield that can't absorb it.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">True title contender. Skubal/Cade Smith alone provides a weekly scoring floor most rosters can't match. Ranked #3 over Ian's Inspiring Team on the strength of superior closer scoring output.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-top">4</div>
+          <div class="team-header-info">
+            <div class="team-card-name">Ian's Inspiring Team</div>
+            <div class="team-header-grade"><span class="grade-pill g-b+">B+</span><span class="team-header-rank-label">Rank #4 — Highest Floor in the League</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val">The highest weekly scoring floor in the league — this team never has a blowout loss. <strong>Jose Ramirez</strong> is an elite five-tool point generator. <strong>Yordan Alvarez</strong> is a top-5 power bat. <strong>Gallen, Peralta, and Eovaldi</strong> form a top-5 rotation scoring trio. Edwin Diaz adds high-leverage closer points every week.</div></div>
+          <div class="team-attr"><div class="attr-label amber">Concerns</div><div class="attr-val">Age is a real concern — <strong>Springer (35+), Semien (35+), and Gausman (35+)</strong> all carry decline risk. Any significant drop-off from even one of them shaves meaningful points off the weekly total. Jeremy Pena starts with a fractured finger.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val">If the veterans age gracefully and Pena returns quickly, this is one of the most consistent weekly scorers in the league. If Springer or Semien slip, the offensive point floor drops noticeably.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">The safest pick to win the most H2H matchups in a given season. An elite floor means this team rarely gets blown out. Ranked #4 over Chain of Custody because they actually have a closer generating save points.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-mid">5</div>
+          <div class="team-header-info">
+            <div class="team-card-name">Chain of Custody</div>
+            <div class="team-header-grade"><span class="grade-pill g-b">B</span><span class="team-header-rank-label">Rank #5 — Best Rotation, Weak Closer Scoring</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val">The best rotation top-to-bottom in the draft. <strong>Ohtani</strong> as a two-way point engine, plus <strong>Valdez and Cease</strong>, gives them three SP1-level scorers at the top. Chase Burns adds high-ceiling scoring depth. <strong>Tatis Jr.</strong> is a five-tool offensive point machine who can single-handedly swing a weekly matchup.</div></div>
+          <div class="team-attr"><div class="attr-label red">Fatal Flaw</div><div class="attr-val"><strong>The worst closer scoring situation in the league.</strong> Detmers is not a closer. Estrada has no saves path. Romero is buried in a murky St. Louis committee. In a points format, save bonuses accumulate into a significant weekly advantage — and this roster is giving that up every single week, all season long.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val"><strong>Chase Burns</strong> converting premium stuff into high-volume innings and strikeout points. With Greene's injury opening the Reds rotation, Burns may log more starts than expected.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">A magnificent rotation handcuffed by a bullpen that doesn't score save points. Chain of Custody and Kent Murphy's Dingers are the two teams most likely to be hunting for closer upgrades at the trade deadline.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-mid">6</div>
+          <div class="team-header-info">
+            <div class="team-card-name">Thievin' Ricans</div>
+            <div class="team-header-grade"><span class="grade-pill g-b">B</span><span class="team-header-rank-label">Rank #6 — Most Underrated Weekly Scorer</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val">The most underrated team in the draft. <strong>Suarez and Castillo</strong> form a quietly elite weekly SP scoring duo — both generate consistent quality-start and strikeout points. <strong>Vladdy Jr.</strong> is a top-10 first base point scorer. Corbin Carroll offers speed-and-power offensive upside. Byron Buxton, when healthy, is a top-5 OF weekly scorer.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val"><strong>Justin Steele.</strong> Medically cleared from UCL revision, targeting May/June return. His return adds a legitimate SP2-level point producer and gives Thievin' Ricans a four-deep pitching scoring rotation — that's playoff-caliber in the second half.</div></div>
+          <div class="team-attr"><div class="attr-label amber">Concerns</div><div class="attr-val">Closer scoring is inconsistent — Estevez (velocity concerns), Robert Garcia (unproven), Robert Suarez (not in a saves role). No elite high-leverage save scorer. Carroll's hamstring history is worth monitoring all season.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">If Steele returns in May and Buxton stays healthy, Thievin' Ricans quietly competes for a top-3 weekly scoring finish in the second half. Most opponents will underestimate this team — and regret it.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-mid">7</div>
+          <div class="team-header-info">
+            <div class="team-card-name">Kent Murphy's Dingers</div>
+            <div class="team-header-grade"><span class="grade-pill g-b">B</span><span class="team-header-rank-label">Rank #7 — Elite SP Scoring, No Closer Points</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val"><strong>Garrett Crochet</strong> is one of the top strikeout point scorers in baseball — a legitimate Cy Young candidate. <strong>George Kirby</strong> may be the most underrated pitcher in the game (6.87 career K/BB ratio = massive quality-start points). Bibee, Pivetta, and Pepiot give a five-deep scoring rotation. When Greene (July) and Priester (late April) return, potentially 7 SP-caliber point producers.</div></div>
+          <div class="team-attr"><div class="attr-label red">Fatal Flaw</div><div class="attr-val"><strong>Vesia, Brash, and Vest are three setup men with no saves path whatsoever.</strong> In an H2H points format, save bonuses are weekly scoring that this roster simply doesn't access. The offense also has a liability at SS: <strong>Geraldo Perdomo</strong> is one of the lowest point-producing shortstops in this draft.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val"><strong>Jo Adell.</strong> The eternal boom-or-bust prospect. If it clicks in 2026 — 25 HR, 15 SB — he becomes a legitimate weekly offensive scorer. If not, the outfield is a consistent drag on the point total.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">The most lopsided roster in the draft — elite pitching point production, zero closer scoring. Will beat teams on SP points and lose on the save column every week. Ranked #7 over Jobu's Rum Collection on overall offensive depth.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-mid">8</div>
+          <div class="team-header-info">
+            <div class="team-card-name">Jobu's Rum Collection</div>
+            <div class="team-header-grade"><span class="grade-pill g-b">B</span><span class="team-header-rank-label">Rank #8 — Best Closer Trio in the League</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val"><strong>Paul Skenes</strong> is the reigning NL Cy Young winner — one of the highest weekly SP point scorers in this draft. The best closer scoring trio in the league: <strong>Munoz, Pagan, and Hoffman</strong> generate save and high-leverage points that most rosters can't match from the bullpen. Contreras is a top-5 weekly scoring catcher.</div></div>
+          <div class="team-attr"><div class="attr-label amber">Concerns</div><div class="attr-val">The offense is the thinnest in the top half of this league for point production. After Contreras, the weekly scoring drops off sharply. <strong>Willy Adames, Alonso, and Altuve</strong> are solid but aging, and the lineup doesn't generate offensive points at a rate that can carry a bad pitching week.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val"><strong>Bryce Miller</strong> (on IL). If he returns healthy and pitches at his 2025 level, Jobu's Rum Collection has five deep SP scoring options. Without him, the rotation behind Skenes is thin and points will fluctuate week to week.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">A pitching-dominant team that will outscore opponents on the mound and fight to stay in matchups offensively. Ranked #8 over Strider? I Barely Know Her purely on roster health — no IL issues to start the season.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-bot">9</div>
+          <div class="team-header-info">
+            <div class="team-card-name">Strider? I Barely Know Her</div>
+            <div class="team-header-grade"><span class="grade-pill g-b-">B-</span><span class="team-header-rank-label">Rank #9 — Three IL Arms to Open the Season</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val"><strong>Caminero</strong> is a top-3B weekly point scorer in baseball. Freeman is a perennial high-output first baseman. <strong>Imanaga and Gilbert</strong> are a strong SP 1-2 point punch. <strong>Jhoan Duran</strong> is an elite high-leverage closer producing save and strikeout points every week he pitches.</div></div>
+          <div class="team-attr"><div class="attr-label amber">Concerns</div><div class="attr-val">Three pitchers opening on the IL is a real weekly points problem early on. <strong>Rodon</strong> (bone spur, late April/May), <strong>Musgrove</strong> (TJ, no firm timeline), and <strong>Bieber</strong> (forearm fatigue) are all unavailable at the start. Expect to lose pitching-point matchups in April.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val"><strong>Rodon's May return.</strong> Add him to Imanaga/Gilbert/Woo already in place and this suddenly becomes one of the better weekly pitching point totals in the league — a complete team from May onward.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">Guaranteed slow start — count on going below .500 in April matchups. The mid-season surge potential is real if Rodon returns clean. Ranked #9 over The Crochman Cometh on a more reliable closer scoring situation.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-bot">10</div>
+          <div class="team-header-info">
+            <div class="team-card-name">The Crochman Cometh</div>
+            <div class="team-header-grade"><span class="grade-pill g-b-">B-</span><span class="team-header-rank-label">Rank #10 — Deep Bench, Volatile Active Roster</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val"><strong>Yamamoto</strong> is an elite weekly SP point anchor. The bench SP depth is arguably the best in the entire league — <strong>King, Horton, and Sasaki</strong> are three arms most teams would start every week. Devers is a consistent top-10 3B point producer. Chisholm gives speed-plus-power scoring upside.</div></div>
+          <div class="team-attr"><div class="attr-label amber">Concerns</div><div class="attr-val">The closer scoring is the weakest active bullpen in the league — Jansen in a committee, Palencia murky, Iglesias inconsistent. <strong>Snell's shoulder</strong> starts on IL with a 6-week floor and chronic history that makes a full scoring season uncertain. Sale and deGrom are high-risk point gambles.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val">If <strong>Snell returns fully healthy</strong> and King/Horton/Sasaki all earn starting roles and deliver, the weekly pitching point total jumps significantly. If Snell re-injures early, Yamamoto is carrying too much weight alone. The team name will age well or become a cruel joke.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">The widest outcome range of any team in the league — anywhere from 2nd to 11th is realistic. Best reserve pitching depth in the league; worst active closer scoring. A team that will live and die by weekly health.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-bot">11</div>
+          <div class="team-header-info">
+            <div class="team-card-name">I need healing</div>
+            <div class="team-header-grade"><span class="grade-pill g-b-">B-</span><span class="team-header-rank-label">Rank #11 — Wheeler or Bust</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val"><strong>Judge and Elly De La Cruz</strong> are two of the most explosive offensive point scorers in baseball. Trea Turner at full health is an elite SS point producer. Olson and Arozarena add power-and-speed offensive depth. Brandon Webb is a reliable mid-rotation SP scorer every week he starts.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val"><strong>Zack Wheeler.</strong> Threw a minor league game March 23rd — potentially the fastest TOS recovery on record. If he returns in April and scores like his 2025 self (2.47 ERA, elite Ks), this rotation becomes a legitimate top-5 weekly SP point total. If he struggles or re-injures, the staff behind Webb is thin.</div></div>
+          <div class="team-attr"><div class="attr-label amber">Concerns</div><div class="attr-val"><strong>Hader</strong> starts on IL with biceps tendinitis. Seymour is an unproven save scorer. The entire closer point production depends on Hader coming back healthy — and every week he's out is save points this team doesn't recoup. The team name may be the most prophetic in this league.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">The most binary outcome in the draft. Wheeler comes back clean = legitimate top-5 weekly scorer. Wheeler struggles = bottom-3. Ranked #11 over Jazz J1zz'on'em because at least the pitching staff can compete on a good week.</div></div>
+        </div>
+      </div>
+
+      <div class="team-card reveal">
+        <div class="team-card-header">
+          <div class="team-rank-badge rank-bot">12</div>
+          <div class="team-header-info">
+            <div class="team-card-name">Jazz J1zz'on'em</div>
+            <div class="team-header-grade"><span class="grade-pill g-b-">B-</span><span class="team-header-rank-label">Rank #12 — Best Offense, Worst Pitching</span></div>
+          </div>
+        </div>
+        <div class="team-card-body">
+          <div class="team-attr"><div class="attr-label green">Strengths</div><div class="attr-val">The best offensive point trio in the draft — <strong>Acuna, Tucker, and Chourio</strong> is a spectacular top-3 OF scoring combination. Edward Wetherholt and Pete Alonso add power depth. Jazz J1zz'on'em will put up big offensive point totals every week regardless of matchup.</div></div>
+          <div class="team-attr"><div class="attr-label red">Fatal Flaw</div><div class="attr-val">The pitching is going to bleed points <strong>until July.</strong> Burnes (TJ surgery, July) and Kelly (back injury) both start on IL. The active rotation — Gore, Rogers, Alcantara, Santana — is below-average by H2H points standards. Opponents can count on a pitching-point advantage in basically every matchup through June.</div></div>
+          <div class="team-attr"><div class="attr-label purple">Wild Card</div><div class="attr-val"><strong>Corbin Burnes' return in July.</strong> When healthy, Burnes is an ace-level weekly point scorer. His return in the second half completely changes the weekly math for this roster — and they're built to peak at exactly the right time for a playoff run.</div></div>
+          <div class="team-attr"><div class="attr-label">Verdict</div><div class="attr-val">The most polarized roster in the league. Dead last in the power rankings — but the most dangerous second-half team if Burnes returns clean. Do not trade Jazz J1zz'on'em's bats away cheaply in June assuming they're out of it.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="footer-title">⚾ 2026 FANTASY BASEBALL</div>
+  <p>Commissioner's Pre-Season Scouting Report &bull; March 2026 &bull; 12-Team Head-to-Head Points League</p>
+  <p style="margin-top:6px; font-style:italic; color:#3d5468">Good luck to all managers. May your studs stay healthy and your closers hold leads.</p>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
